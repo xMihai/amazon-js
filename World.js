@@ -8,8 +8,8 @@ class World {
         this.minCityCount = minCityCount;
         this.origRoutes = origRoutes;
         this.cities = [];
-        this.logCities = (cities) => {
-            cities.forEach(city => city.log());
+        this.logCities = () => {
+            this.cities.forEach(city => city.log());
         };
         // Find optimum city number
         let cityCount = minCityCount;
@@ -26,7 +26,6 @@ class World {
         });
         // Add routes to cities
         origRoutes.forEach(route => this.addRoute(route));
-        this.logCities(this.cities);
     }
     addRoute(route) {
         this.cities[route[0]].addRoute(this.cities[route[1]]);
@@ -56,7 +55,6 @@ class World {
             .map(city => city.afterSignature() + ' ')
             .sort()
             .toString();
-        console.log(routeSigs, afterRouteSigs);
         return routeSigs === afterRouteSigs;
     }
     all() {
@@ -77,12 +75,68 @@ class World {
         let newRoutes;
         while ((newRoutes = p.next())) {
             newRoutes.forEach(route => this.addRoute(route));
-            if (this.checkShallow() && this.checkDeep()) {
-                this.logCities(this.cities);
-                throw 0;
-            }
+            this.checkShallow() && this.checkDeep() && this.remap();
             newRoutes.forEach(route => this.removeRoute(route));
         }
+    }
+    remap() {
+        this.logCities();
+        // use each city as starting point
+        this.cities.forEach(city => {
+            const newMap = [];
+            const moved = this.cities.map(() => false);
+            let startCity = moved.indexOf(false);
+            let valid = true;
+            while (startCity > -1 && valid) {
+                valid = this.relocate(this.cities[startCity], newMap, moved, moved.reduce((result, val, i) => {
+                    if (!val)
+                        result.push(i);
+                    return result;
+                }, []));
+                startCity = moved.indexOf(false);
+            }
+            if (valid)
+                throw 1;
+        });
+    }
+    relocate(city, newMap, moved, availableLocations) {
+        console.log('try to relocate city ' + city.location);
+        return availableLocations
+            .filter(location => this.cities[location].signature() === city.afterSignature())
+            .some(location => {
+            newMap[location] = city;
+            moved[city.location] = true;
+            if (this.fit(city, location, newMap, moved, availableLocations)) {
+                console.log(city.location + ' fits in location ' + location);
+                return true;
+            }
+            console.log(city.location + ' does NOT fit in location ' + location);
+            delete newMap[location];
+            moved[city.location] = false;
+            return false;
+        });
+    }
+    fit(city, location, newMap, moved, availableLocations) {
+        console.log('check fit of city ' + city.location + ' in location ' + location);
+        // Destinations of old location
+        const oldRoutes = this.cities[location].routeList().map(d => d.location);
+        // Destinations of new city
+        const newRoutes = city.afterRouteList();
+        return newRoutes.every(newDest => {
+            // Check if destination city was moved
+            if (moved[newDest.location]) {
+                // Was the destination city moved in a location that was an old route?
+                if (!oldRoutes.includes(newMap.indexOf(newDest))) {
+                    // This city is not fit for this location
+                    return false;
+                }
+                return true;
+            }
+            else {
+                // Try to move new destination to an old acceptable location
+                return this.relocate(newDest, newMap, moved, oldRoutes.filter(oldRoute => newMap[oldRoute] === undefined));
+            }
+        });
     }
 }
 exports.default = World;
