@@ -16,6 +16,7 @@ class World {
         while ((cityCount * (cityCount - 1)) % 4 !== 0) {
             cityCount++;
         }
+        console.log(`${origCityCount} -> ${cityCount} cities`);
         // Create empty cities
         for (let i = 0; i < cityCount; i++) {
             this.cities[i] = new City_1.default(i);
@@ -75,16 +76,28 @@ class World {
         let newRoutes;
         while ((newRoutes = p.next())) {
             newRoutes.forEach(route => this.addRoute(route));
-            this.checkShallow() && this.checkDeep() && this.remap();
+            if (this.checkShallow() && this.checkDeep()) {
+                const newMap = this.remap();
+                if (newMap) {
+                    return (`${this.cities.length - this.origCityCount} ${optimalRouteCount - this.origRoutes.length}\n` +
+                        newRoutes.map(route => `${route[0]} ${route[1]}`).join('\n') +
+                        '\n' +
+                        newMap.join('\n'));
+                }
+            }
             newRoutes.forEach(route => this.removeRoute(route));
         }
+        const w = new World(this.origCityCount, this.cities.length + 1, this.origRoutes);
+        return w.all();
     }
     remap() {
         this.logCities();
+        let newMap = [];
+        let moved = [];
         // use each city as starting point
-        this.cities.forEach(city => {
-            const newMap = [];
-            const moved = this.cities.map(() => false);
+        if (this.cities.some(city => {
+            newMap = [];
+            moved = this.cities.map(() => false);
             let startCity = moved.indexOf(false);
             let valid = true;
             while (startCity > -1 && valid) {
@@ -95,9 +108,11 @@ class World {
                 }, []));
                 startCity = moved.indexOf(false);
             }
-            if (valid)
-                throw 1;
-        });
+            return valid;
+        })) {
+            return newMap.map(city => city.location);
+        }
+        return null;
     }
     relocate(city, newMap, moved, availableLocations) {
         console.log('try to relocate city ' + city.location);

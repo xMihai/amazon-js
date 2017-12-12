@@ -11,6 +11,8 @@ export default class World {
       cityCount++
     }
 
+    console.log(`${origCityCount} -> ${cityCount} cities`)
+
     // Create empty cities
     for (let i: number = 0; i < cityCount; i++) {
       this.cities[i] = new City(i)
@@ -61,7 +63,7 @@ export default class World {
     return routeSigs === afterRouteSigs
   }
 
-  public all() {
+  public all(): string {
     const optimalRouteCount = this.cities.length * (this.cities.length - 1) / 4
     console.log(this.origRoutes.length + ' -> ' + optimalRouteCount + ' routes')
 
@@ -89,37 +91,61 @@ export default class World {
     while ((newRoutes = p.next())) {
       newRoutes.forEach(route => this.addRoute(route))
 
-      this.checkShallow() && this.checkDeep() && this.remap()
+      if (this.checkShallow() && this.checkDeep()) {
+        const newMap = this.remap()
+
+        if (newMap) {
+          return (
+            `${this.cities.length - this.origCityCount} ${optimalRouteCount - this.origRoutes.length}\n` +
+            newRoutes.map(route => `${route[0]} ${route[1]}`).join('\n') +
+            '\n' +
+            newMap.join('\n')
+          )
+        }
+      }
 
       newRoutes.forEach(route => this.removeRoute(route))
     }
+
+    const w = new World(this.origCityCount, this.cities.length + 1, this.origRoutes)
+
+    return w.all()
   }
 
-  private remap() {
+  private remap(): number[] | null {
     this.logCities()
 
+    let newMap: CityMap = []
+    let moved: boolean[] = []
+
     // use each city as starting point
-    this.cities.forEach(city => {
-      const newMap: CityMap = []
-      const moved: boolean[] = this.cities.map(() => false)
+    if (
+      this.cities.some(city => {
+        newMap = []
+        moved = this.cities.map(() => false)
 
-      let startCity = moved.indexOf(false)
-      let valid = true
-      while (startCity > -1 && valid) {
-        valid = this.relocate(
-          this.cities[startCity],
-          newMap,
-          moved,
-          moved.reduce((result: number[], val, i) => {
-            if (!val) result.push(i)
-            return result
-          }, [])
-        )
-        startCity = moved.indexOf(false)
-      }
+        let startCity = moved.indexOf(false)
+        let valid = true
+        while (startCity > -1 && valid) {
+          valid = this.relocate(
+            this.cities[startCity],
+            newMap,
+            moved,
+            moved.reduce((result: number[], val, i) => {
+              if (!val) result.push(i)
+              return result
+            }, [])
+          )
+          startCity = moved.indexOf(false)
+        }
 
-      if (valid) throw 1
-    })
+        return valid
+      })
+    ) {
+      return newMap.map(city => (city as City).location)
+    }
+
+    return null
   }
 
   private relocate(city: City, newMap: CityMap, moved: boolean[], availableLocations: number[]): boolean {
