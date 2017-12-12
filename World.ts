@@ -97,9 +97,10 @@ export default class World {
         if (newMap) {
           return (
             `${this.cities.length - this.origCityCount} ${optimalRouteCount - this.origRoutes.length}\n` +
-            newRoutes.map(route => `${route[0]} ${route[1]}`).join('\n') +
-            '\n' +
-            newMap.join('\n')
+            newRoutes.map(route => `${route[0] + 1} ${route[1] + 1}`).join('\n') +
+            (newRoutes.length > 0 ? '\n' : '') +
+            newMap.map(x => x + 1).join('\n') +
+            '\n'
           )
         }
       }

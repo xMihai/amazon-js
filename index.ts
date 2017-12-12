@@ -2,7 +2,8 @@ import * as fs from 'fs'
 import City from './City'
 import World from './World'
 
-const input = '01_AMS.txt'
+const input = '05_DUB.txt'
+const output = input.replace('.txt', '_sol.txt')
 
 const data = fs.readFileSync(input, 'utf8')
 const lines = data.split('\n')
@@ -22,3 +23,5 @@ const w = new World(+origCityCount, +origCityCount, routes)
 const r = w.all()
 console.log('---')
 console.log(r)
+
+fs.writeFileSync(output, r, 'utf8')

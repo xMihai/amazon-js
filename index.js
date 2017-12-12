@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const World_1 = require("./World");
-const input = '01_AMS.txt';
+const input = '05_DUB.txt';
+const output = input.replace('.txt', '_sol.txt');
 const data = fs.readFileSync(input, 'utf8');
 const lines = data.split('\n');
 const strToRoute = (x) => [+x[0] - 1, +x[1] - 1];
@@ -12,7 +13,9 @@ const routes = [];
 routeLines.forEach(line => {
     routes.push(strToRoute(line.split(' ')));
 });
+console.log(2);
 const w = new World_1.default(+origCityCount, +origCityCount, routes);
 const r = w.all();
 console.log('---');
 console.log(r);
+fs.writeFileSync(output, r, 'utf8');

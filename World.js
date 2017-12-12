@@ -11,6 +11,7 @@ class World {
         this.logCities = () => {
             this.cities.forEach(city => city.log());
         };
+        console.log(origCityCount);
         // Find optimum city number
         let cityCount = minCityCount;
         while ((cityCount * (cityCount - 1)) % 4 !== 0) {
@@ -80,9 +81,10 @@ class World {
                 const newMap = this.remap();
                 if (newMap) {
                     return (`${this.cities.length - this.origCityCount} ${optimalRouteCount - this.origRoutes.length}\n` +
-                        newRoutes.map(route => `${route[0]} ${route[1]}`).join('\n') +
-                        '\n' +
-                        newMap.join('\n'));
+                        newRoutes.map(route => `${route[0] + 1} ${route[1] + 1}`).join('\n') +
+                        (newRoutes.length > 0 ? '\n' : '') +
+                        newMap.map(x => x + 1).join('\n') +
+                        '\n');
                 }
             }
             newRoutes.forEach(route => this.removeRoute(route));
