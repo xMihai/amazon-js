@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import City from './City'
 import World from './World'
 
-const input = '05_DUB.txt'
+const input = '06_GDN.txt'
 const output = input.replace('.txt', '_sol.txt')
 
 const data = fs.readFileSync(input, 'utf8')

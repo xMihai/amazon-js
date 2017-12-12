@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const World_1 = require("./World");
-const input = '05_DUB.txt';
+const input = '06_GDN.txt';
 const output = input.replace('.txt', '_sol.txt');
 const data = fs.readFileSync(input, 'utf8');
 const lines = data.split('\n');
@@ -13,7 +13,6 @@ const routes = [];
 routeLines.forEach(line => {
     routes.push(strToRoute(line.split(' ')));
 });
-console.log(2);
 const w = new World_1.default(+origCityCount, +origCityCount, routes);
 const r = w.all();
 console.log('---');

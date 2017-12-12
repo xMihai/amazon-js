@@ -11,9 +11,10 @@ class World {
         this.logCities = () => {
             this.cities.forEach(city => city.log());
         };
-        console.log(origCityCount);
+        // There may be a min city count because of a high number of routes
+        const minCityCountByRoutes = Math.ceil((Math.sqrt(16 * origRoutes.length + 1) + 1) / 2);
         // Find optimum city number
-        let cityCount = minCityCount;
+        let cityCount = Math.max(minCityCount, minCityCountByRoutes);
         while ((cityCount * (cityCount - 1)) % 4 !== 0) {
             cityCount++;
         }
